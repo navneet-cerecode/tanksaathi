@@ -1,0 +1,18 @@
+version = 0.1
+
+[default.global.parameters]
+stack_name = "tanksaathi-dev"
+
+[default.deploy.parameters]
+region = "ap-south-1"
+resolve_s3 = true
+s3_prefix = "tanksaathi-dev"
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = false
+fail_on_empty_changeset = false
+parameter_overrides = "Stage=\"dev\""
+tags = "Project=\"TankSaathi\" Team=\"NicobarAndaman\""
+
+[default.validate.parameters]
+lint = true
+region = "ap-south-1"

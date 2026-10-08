@@ -102,9 +102,9 @@ function plan(id: ScenarioId, start: number, now: number, offsetMin: number): Pl
     case "leak":
       return {
         ...base,
-        leakLph: 350,
+        leakLph: 220,
         leakFrom,
-        description: "From 1 AM a stuck float valve loses about 350 L/h while the building sleeps.",
+        description: "From 1 AM a running cistern or stuck float valve loses about 220 L/h while the building sleeps.",
       };
     case "stale":
       return {
@@ -115,7 +115,7 @@ function plan(id: ScenarioId, start: number, now: number, offsetMin: number): Pl
     case "recovery":
       return {
         ...base,
-        leakLph: 350,
+        leakLph: 220,
         leakFrom,
         leakUntil: now - 40 * MIN,
         // A tanker unloading pump moves roughly 300 L/min.

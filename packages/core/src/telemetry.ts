@@ -28,6 +28,23 @@ export const TelemetryMessageSchema = z.strictObject({
 export type TelemetryReading = z.infer<typeof TelemetryReadingSchema>;
 export type TelemetryMessage = z.infer<typeof TelemetryMessageSchema>;
 
+/**
+ * Build the wire message for timed readings. The sequence number is the
+ * reading's minute since the epoch: monotonic per device, unique per minute,
+ * and stable when the same reading is re-sent.
+ */
+export function toTelemetryMessage(deviceId: string, readings: Array<{ t: number; distanceMm: number }>): TelemetryMessage {
+  return {
+    v: 1,
+    deviceId,
+    readings: readings.map((r) => ({
+      seq: Math.floor(r.t / 60_000),
+      measuredAt: new Date(r.t).toISOString(),
+      distanceMm: r.distanceMm,
+    })),
+  };
+}
+
 export type Channel = "sim" | "dev";
 
 export interface TelemetryTopic {

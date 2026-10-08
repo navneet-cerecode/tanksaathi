@@ -82,7 +82,7 @@ describe("computeTankState over the demo scenarios", () => {
     const hour = localHour(state.anomaly.firstDetectedAt!, 330);
     expect(hour).toBeGreaterThanOrEqual(0);
     expect(hour).toBeLessThan(5);
-    expect(state.anomaly.excessLph).toBeGreaterThan(200);
+    expect(state.anomaly.excessLph).toBeGreaterThan(150);
   });
 
   it("marks the stale-sensor scenario as stale", () => {

@@ -1,5 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { parseTelemetryTopic, telemetryTopic, TelemetryMessageSchema } from "../src/telemetry";
+import { parseTelemetryTopic, telemetryTopic, TelemetryMessageSchema, toTelemetryMessage } from "../src/telemetry";
+
+describe("toTelemetryMessage", () => {
+  it("turns timed readings into a valid message with increasing sequence numbers", () => {
+    const t0 = Date.UTC(2026, 9, 8, 9, 0);
+    const message = toTelemetryMessage("sim-demo-hostel-a-roof-1", [
+      { t: t0, distanceMm: 900 },
+      { t: t0 + 600_000, distanceMm: 905 },
+    ]);
+    expect(TelemetryMessageSchema.safeParse(message).success).toBe(true);
+    expect(message.readings.map((r) => r.measuredAt)).toEqual(["2026-10-08T09:00:00.000Z", "2026-10-08T09:10:00.000Z"]);
+    expect(message.readings[1]!.seq).toBeGreaterThan(message.readings[0]!.seq);
+  });
+});
 
 const reading = { seq: 41, measuredAt: "2026-10-08T09:00:00.000Z", distanceMm: 812 };
 const valid = { v: 1, deviceId: "sim-demo-hostel-a-roof-1", readings: [reading] };

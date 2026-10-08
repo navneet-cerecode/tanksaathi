@@ -1,0 +1,31 @@
+{
+  "name": "@tanksaathi/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AWS SAM backend for TankSaathi.",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "node scripts/build.mjs",
+    "validate": "sam validate --lint",
+    "deploy": "npm run build && sam deploy"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-iot": "^3.1147.0",
+    "@types/aws-lambda": "^8.10.164",
+    "@types/node": "^22.20.5",
+    "esbuild": "^0.25.12",
+    "mqtt": "^5.16.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.3"
+  },
+  "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.36.0",
+    "@aws-lambda-powertools/metrics": "^2.36.0",
+    "@aws-sdk/client-dynamodb": "^3.1147.0",
+    "@aws-sdk/lib-dynamodb": "^3.1147.0",
+    "@tanksaathi/core": "0.1.0"
+  }
+}

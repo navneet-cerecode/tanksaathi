@@ -5,7 +5,8 @@
   "license": "MIT",
   "author": "Team NicobarAndaman",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "backend"
   ],
   "scripts": {
     "test": "npm test --workspaces --if-present",
