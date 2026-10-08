@@ -13,7 +13,7 @@ export interface RateOptions {
 
 const HOUR = 3_600_000;
 
-export const byTime = (a: Reading, b: Reading) => a.t - b.t;
+export const byTime = <T extends { t: number }>(a: T, b: T) => a.t - b.t;
 
 /**
  * Net outflow in litres per hour over the half-open window (fromMs, toMs].

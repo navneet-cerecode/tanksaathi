@@ -43,7 +43,7 @@ export interface TankStore {
   /** Must be idempotent: the same (t, seq) overwrites itself. */
   putReadings(buildingId: string, tankId: string, readings: StoredReading[]): Promise<void>;
   recentReadings(buildingId: string, tankId: string, sinceMs: number): Promise<RawReading[]>;
-  saveState(buildingId: string, tankId: string, state: TankState, computedAt: number): Promise<void>;
+  saveState(buildingId: string, tankId: string, state: TankState, computedAt: number, channel: Channel): Promise<void>;
 }
 
 export type RejectReason = "bad-topic" | "bad-payload" | "identity-mismatch" | "unknown-tank" | "no-valid-readings";
@@ -105,7 +105,7 @@ export async function processTelemetry(event: Record<string, unknown>, store: Ta
     forecastMaxC: context.forecastMaxC,
     ignoreBefore: meta.lastResolvedAt ?? undefined,
   });
-  await store.saveState(route.buildingId, route.tankId, state, now);
+  await store.saveState(route.buildingId, route.tankId, state, now, route.channel);
 
   return {
     ok: true,

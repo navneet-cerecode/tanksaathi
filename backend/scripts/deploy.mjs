@@ -14,6 +14,8 @@ if (!env.ALERT_EMAIL) throw new Error("ALERT_EMAIL missing in .env.deploy");
 
 const overrides = [`Stage=${env.STAGE ?? "dev"}`, `AlertEmail=${env.ALERT_EMAIL}`];
 if (env.APP_URL) overrides.push(`AppUrl=${env.APP_URL}`);
+if (!env.IOT_DATA_ENDPOINT) throw new Error("IOT_DATA_ENDPOINT missing in .env.deploy");
+overrides.push(`IotDataEndpoint=${env.IOT_DATA_ENDPOINT}`);
 
 execFileSync(process.execPath, ["scripts/build.mjs"], { stdio: "inherit" });
 // Windows can only launch sam.cmd through a shell, so quote the path (it contains a space).

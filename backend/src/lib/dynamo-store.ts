@@ -8,7 +8,7 @@ import {
   type BatchWriteCommandInput,
   type BatchWriteCommandOutput,
 } from "@aws-sdk/lib-dynamodb";
-import type { BuildingConfig, RawReading, TankConfig, TankState } from "@tanksaathi/core";
+import type { BuildingConfig, Channel, RawReading, TankConfig, TankState } from "@tanksaathi/core";
 import type { StoredReading, TankContext, TankMeta, TankStore } from "../ingest/process";
 import { buildingPk, META_SK, READING_SK_CEILING, readingSk, readingSkFloor, STATE_SK, tankConfigSk, tankPk } from "./keys";
 
@@ -81,16 +81,16 @@ export class DynamoTankStore implements TankStore {
   }
 
   /** Never lets an older computation overwrite a newer one. */
-  async saveState(buildingId: string, tankId: string, state: TankState, computedAt: number): Promise<void> {
+  async saveState(buildingId: string, tankId: string, state: TankState, computedAt: number, channel: Channel): Promise<void> {
     try {
       await this.doc.send(
         new UpdateCommand({
           TableName: this.table,
           Key: { PK: tankPk(buildingId, tankId), SK: STATE_SK },
-          UpdateExpression: "SET #state = :state, computedAt = :computedAt, lastReadingAt = :last",
+          UpdateExpression: "SET #state = :state, computedAt = :computedAt, lastReadingAt = :last, channel = :channel",
           ConditionExpression: "attribute_not_exists(lastReadingAt) OR lastReadingAt <= :last",
           ExpressionAttributeNames: { "#state": "state" },
-          ExpressionAttributeValues: { ":state": state, ":computedAt": computedAt, ":last": state.lastReadingAt ?? 0 },
+          ExpressionAttributeValues: { ":state": state, ":computedAt": computedAt, ":last": state.lastReadingAt ?? 0, ":channel": channel },
         }),
       );
     } catch (err) {

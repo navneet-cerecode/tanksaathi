@@ -16,6 +16,12 @@ Parameters:
     Type: String
     Default: http://localhost:5173
     Description: Base URL of the web app, used in alert links.
+  IotDataEndpoint:
+    Type: String
+    Description: Account's IoT data endpoint (aws iot describe-endpoint --endpoint-type iot:Data-ATS).
+
+Conditions:
+  AppIsLocal: !Equals [!Ref AppUrl, "http://localhost:5173"]
 
 Globals:
   Function:
@@ -290,7 +296,134 @@ Resources:
               ArnLike:
                 aws:SourceArn: !Sub "arn:${AWS::Partition}:events:${AWS::Region}:${AWS::AccountId}:rule/tanksaathi-${Stage}/*"
 
+  # ---------- Identity and API ----------
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub tanksaathi-${Stage}
+      UserPoolTier: LITE
+      UsernameAttributes: [email]
+      AdminCreateUserConfig:
+        AllowAdminCreateUserOnly: true
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 12
+          RequireLowercase: true
+          RequireUppercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+      Schema:
+        - Name: buildingId
+          AttributeDataType: String
+          Mutable: true
+          StringAttributeConstraints: { MinLength: "1", MaxLength: "48" }
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - { Name: verified_email, Priority: 1 }
+      UserPoolTags:
+        Project: TankSaathi
+        Team: NicobarAndaman
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub tanksaathi-${Stage}-web
+      UserPoolId: !Ref UserPool
+      GenerateSecret: false
+      ExplicitAuthFlows: [ALLOW_USER_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH, ALLOW_ADMIN_USER_PASSWORD_AUTH]
+      PreventUserExistenceErrors: ENABLED
+      EnableTokenRevocation: true
+      # Users can read their building but never change it.
+      ReadAttributes: [email, name, custom:buildingId]
+      WriteAttributes: [name]
+      IdTokenValidity: 60
+      AccessTokenValidity: 60
+      RefreshTokenValidity: 7
+      TokenValidityUnits: { IdToken: minutes, AccessToken: minutes, RefreshToken: days }
+
+  CaretakerGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties: { UserPoolId: !Ref UserPool, GroupName: caretaker, Description: Runs the building's tanks and incidents }
+  ResidentGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties: { UserPoolId: !Ref UserPool, GroupName: resident, Description: Sees the simplified building status }
+  DemoOperatorGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties: { UserPoolId: !Ref UserPool, GroupName: demo-operator, Description: Drives the sensor simulator on demo buildings }
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      Auth:
+        DefaultAuthorizer: CognitoJwt
+        Authorizers:
+          CognitoJwt:
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}
+              audience: [!Ref UserPoolClient]
+      CorsConfiguration:
+        AllowOrigins: !If [AppIsLocal, ["http://localhost:5173"], [!Ref AppUrl, "http://localhost:5173"]]
+        AllowHeaders: [authorization, content-type]
+        AllowMethods: [GET, POST, PUT, OPTIONS]
+        MaxAge: 600
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 20
+        ThrottlingRateLimit: 10
+      Tags:
+        Project: TankSaathi
+        Team: NicobarAndaman
+
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/tanksaathi-${Stage}-api
+      RetentionInDays: 7
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub tanksaathi-${Stage}-api
+      Description: Caretaker, resident and demo-operator API. Cedar authorizes every request.
+      CodeUri: dist/api
+      MemorySize: 512
+      Timeout: 20
+      LoggingConfig:
+        LogGroup: !Ref ApiLogGroup
+      Environment:
+        Variables:
+          IOT_DATA_ENDPOINT: !Ref IotDataEndpoint
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Table
+        - Statement:
+            - Effect: Allow
+              Action: [states:SendTaskSuccess]
+              Resource: "*"
+            - Effect: Allow
+              Action: [states:StopExecution]
+              Resource: !Sub "arn:${AWS::Partition}:states:${AWS::Region}:${AWS::AccountId}:execution:tanksaathi-${Stage}-incident:*"
+            - Effect: Allow
+              Action: iot:Publish
+              Resource: !Sub "arn:${AWS::Partition}:iot:${AWS::Region}:${AWS::AccountId}:topic/tanksaathi/v1/sim/demo-*"
+      Events:
+        Me: { Type: HttpApi, Properties: { ApiId: !Ref HttpApi, Path: /me, Method: GET } }
+        Status: { Type: HttpApi, Properties: { ApiId: !Ref HttpApi, Path: "/buildings/{buildingId}/status", Method: GET } }
+        Tank: { Type: HttpApi, Properties: { ApiId: !Ref HttpApi, Path: "/buildings/{buildingId}/tanks/{tankId}", Method: GET } }
+        Incidents: { Type: HttpApi, Properties: { ApiId: !Ref HttpApi, Path: "/buildings/{buildingId}/incidents", Method: GET } }
+        Incident: { Type: HttpApi, Properties: { ApiId: !Ref HttpApi, Path: "/buildings/{buildingId}/incidents/{incidentId}", Method: GET } }
+        IncidentAction: { Type: HttpApi, Properties: { ApiId: !Ref HttpApi, Path: "/buildings/{buildingId}/incidents/{incidentId}/actions", Method: POST } }
+        Refill: { Type: HttpApi, Properties: { ApiId: !Ref HttpApi, Path: "/buildings/{buildingId}/refill", Method: PUT } }
+        Scenario: { Type: HttpApi, Properties: { ApiId: !Ref HttpApi, Path: "/buildings/{buildingId}/demo/scenarios", Method: POST } }
+        Reset: { Type: HttpApi, Properties: { ApiId: !Ref HttpApi, Path: "/buildings/{buildingId}/demo/reset", Method: POST } }
+
 Outputs:
+  ApiUrl:
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com
+  UserPoolId:
+    Value: !Ref UserPool
+  UserPoolClientId:
+    Value: !Ref UserPoolClient
   EventBusName:
     Value: !Ref EventBus
   IncidentStateMachineArn:

@@ -1,10 +1,11 @@
 // Bundles each Lambda handler into dist/<name>/index.mjs for `sam deploy`.
 import { build } from "esbuild";
-import { rmSync } from "node:fs";
+import { cpSync, rmSync } from "node:fs";
 
 const handlers = {
   ingest: "src/ingest/handler.ts",
   "register-token": "src/workflow/register-token.ts",
+  api: "src/api/handler.ts",
 };
 
 rmSync("dist", { recursive: true, force: true });
@@ -20,11 +21,17 @@ await Promise.all(
       format: "esm",
       sourcemap: true,
       // The nodejs22.x runtime ships AWS SDK v3.
-      external: ["@aws-sdk/*"],
+      // cedar-wasm loads its .wasm from its own folder, so it ships beside the bundle.
+      external: ["@aws-sdk/*", "@cedar-policy/cedar-wasm", "@cedar-policy/cedar-wasm/*"],
+      loader: { ".cedar": "text" },
       // Some bundled dependencies are CommonJS and call require().
       banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" },
       logLevel: "warning",
     }),
   ),
 );
+const cedarSrc = "../node_modules/@cedar-policy/cedar-wasm";
+const cedarDst = "dist/api/node_modules/@cedar-policy/cedar-wasm";
+cpSync(`${cedarSrc}/package.json`, `${cedarDst}/package.json`);
+cpSync(`${cedarSrc}/nodejs`, `${cedarDst}/nodejs`, { recursive: true });
 console.log(`built ${Object.keys(handlers).join(", ")}`);
