@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.aws-sam/
+coverage/
+*.log
+.env
+.env.*
+!.env.example
+# IoT device credentials never enter the repo
+certs/
+*.pem
+*.pem.crt
+*.pem.key
+*.private.key
+samconfig.local.toml
+.DS_Store
