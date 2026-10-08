@@ -8,6 +8,14 @@ Parameters:
     Default: dev
     AllowedPattern: "^[a-z0-9]{2,8}$"
     Description: Lowercase letters and digits only (also used in IoT rule names).
+  AlertEmail:
+    Type: String
+    AllowedPattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+    Description: Inbox for caretaker and escalation alerts (SNS sends a confirmation link).
+  AppUrl:
+    Type: String
+    Default: http://localhost:5173
+    Description: Base URL of the web app, used in alert links.
 
 Globals:
   Function:
@@ -23,6 +31,8 @@ Globals:
     Environment:
       Variables:
         TABLE_NAME: !Ref Table
+        EVENT_BUS_NAME: !Ref EventBus
+        APP_URL: !Ref AppUrl
         NODE_OPTIONS: --enable-source-maps
     Tags:
       Project: TankSaathi
@@ -77,6 +87,8 @@ Resources:
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref Table
+        - EventBridgePutEventsPolicy:
+            EventBusName: !Ref EventBus
       EventInvokeConfig:
         MaximumRetryAttempts: 2
         DestinationConfig:
@@ -164,7 +176,125 @@ Resources:
           buildingId: demo-hostel-a
           tankId: roof-1
 
+  # ---------- Incident workflow ----------
+  EventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Sub tanksaathi-${Stage}
+
+  CaretakerTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub tanksaathi-${Stage}-caretaker
+      DisplayName: TankSaathi
+      Tags:
+        - { Key: Project, Value: TankSaathi }
+        - { Key: Team, Value: NicobarAndaman }
+
+  CaretakerSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref CaretakerTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+  EscalationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub tanksaathi-${Stage}-escalation
+      DisplayName: TankSaathi escalation
+      Tags:
+        - { Key: Project, Value: TankSaathi }
+        - { Key: Team, Value: NicobarAndaman }
+
+  EscalationSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      TopicArn: !Ref EscalationTopic
+      Protocol: email
+      Endpoint: !Ref AlertEmail
+
+  RegisterTokenLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/tanksaathi-${Stage}-register-token
+      RetentionInDays: 7
+
+  RegisterTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub tanksaathi-${Stage}-register-token
+      Description: Parks a Step Functions task token on the incident so the caretaker's action can resume it.
+      CodeUri: dist/register-token
+      Timeout: 10
+      LoggingConfig:
+        LogGroup: !Ref RegisterTokenLogGroup
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: dynamodb:UpdateItem
+              Resource: !GetAtt Table.Arn
+
+  IncidentStateMachine:
+    Type: AWS::Serverless::StateMachine
+    Properties:
+      Name: !Sub tanksaathi-${Stage}-incident
+      Type: STANDARD
+      DefinitionUri: statemachine/incident.asl.json
+      DefinitionSubstitutions:
+        TableName: !Ref Table
+        CaretakerTopicArn: !Ref CaretakerTopic
+        EscalationTopicArn: !Ref EscalationTopic
+        RegisterTokenFunctionArn: !GetAtt RegisterTokenFunction.Arn
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: dynamodb:UpdateItem
+              Resource: !GetAtt Table.Arn
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt CaretakerTopic.TopicName
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt EscalationTopic.TopicName
+        - LambdaInvokePolicy:
+            FunctionName: !Ref RegisterTokenFunction
+      Events:
+        IncidentOpened:
+          Type: EventBridgeRule
+          Properties:
+            EventBusName: !Ref EventBus
+            Pattern:
+              source: [tanksaathi.ingest]
+              detail-type: [IncidentOpened]
+            RetryPolicy:
+              MaximumRetryAttempts: 4
+              MaximumEventAgeInSeconds: 3600
+            DeadLetterConfig:
+              Arn: !GetAtt DeadLetterQueue.Arn
+      Tags:
+        Project: TankSaathi
+        Team: NicobarAndaman
+
+  DeadLetterQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues: [!Ref DeadLetterQueue]
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: EventBridgeTargetFailures
+            Effect: Allow
+            Principal: { Service: events.amazonaws.com }
+            Action: sqs:SendMessage
+            Resource: !GetAtt DeadLetterQueue.Arn
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Sub "arn:${AWS::Partition}:events:${AWS::Region}:${AWS::AccountId}:rule/tanksaathi-${Stage}/*"
+
 Outputs:
+  EventBusName:
+    Value: !Ref EventBus
+  IncidentStateMachineArn:
+    Value: !Ref IncidentStateMachine
   TableName:
     Value: !Ref Table
   DeadLetterQueueUrl:

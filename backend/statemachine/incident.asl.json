@@ -1,0 +1,132 @@
+{
+  "Comment": "TankSaathi incident lifecycle: claim, notify, wait for acknowledgement (escalate if ignored), wait for resolution, close.",
+  "StartAt": "ClaimIncident",
+  "States": {
+    "ClaimIncident": {
+      "Type": "Task",
+      "Comment": "EventBridge can deliver twice; only the first execution may run the workflow.",
+      "Resource": "arn:aws:states:::dynamodb:updateItem",
+      "Parameters": {
+        "TableName": "${TableName}",
+        "Key": {
+          "PK": { "S.$": "States.Format('BUILDING#{}', $.detail.buildingId)" },
+          "SK": { "S.$": "States.Format('INCIDENT#{}', $.detail.incidentId)" }
+        },
+        "UpdateExpression": "SET workflowExecution = :arn",
+        "ConditionExpression": "attribute_exists(PK) AND attribute_not_exists(workflowExecution)",
+        "ExpressionAttributeValues": { ":arn": { "S.$": "$$.Execution.Id" } }
+      },
+      "ResultPath": null,
+      "Catch": [{ "ErrorEquals": ["DynamoDB.ConditionalCheckFailedException"], "ResultPath": null, "Next": "AlreadyHandled" }],
+      "Next": "NotifyCaretaker"
+    },
+    "AlreadyHandled": { "Type": "Succeed" },
+    "NotifyCaretaker": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "${CaretakerTopicArn}",
+        "Subject.$": "$.detail.notice.subject",
+        "Message.$": "$.detail.notice.body"
+      },
+      "Retry": [{ "ErrorEquals": ["States.TaskFailed"], "IntervalSeconds": 2, "MaxAttempts": 3, "BackoffRate": 2 }],
+      "ResultPath": null,
+      "Next": "WaitForAcknowledgement"
+    },
+    "WaitForAcknowledgement": {
+      "Type": "Task",
+      "Comment": "Paused until the caretaker taps Acknowledge (the API calls SendTaskSuccess).",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${RegisterTokenFunctionArn}",
+        "Payload": {
+          "buildingId.$": "$.detail.buildingId",
+          "incidentId.$": "$.detail.incidentId",
+          "awaiting": "acknowledgement",
+          "taskToken.$": "$$.Task.Token"
+        }
+      },
+      "TimeoutSecondsPath": "$.detail.escalateAfterSeconds",
+      "ResultPath": "$.acknowledgement",
+      "Catch": [{ "ErrorEquals": ["States.Timeout"], "ResultPath": null, "Next": "Escalate" }],
+      "Next": "WaitForResolution"
+    },
+    "Escalate": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "${EscalationTopicArn}",
+        "Subject.$": "$.detail.notice.subject",
+        "Message.$": "States.Format('ESCALATED: nobody has acknowledged this alert yet.\n\n{}', $.detail.notice.body)"
+      },
+      "Retry": [{ "ErrorEquals": ["States.TaskFailed"], "IntervalSeconds": 2, "MaxAttempts": 3, "BackoffRate": 2 }],
+      "ResultPath": null,
+      "Next": "WaitForAcknowledgementAfterEscalation"
+    },
+    "WaitForAcknowledgementAfterEscalation": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${RegisterTokenFunctionArn}",
+        "Payload": {
+          "buildingId.$": "$.detail.buildingId",
+          "incidentId.$": "$.detail.incidentId",
+          "awaiting": "acknowledgement",
+          "taskToken.$": "$$.Task.Token"
+        }
+      },
+      "TimeoutSeconds": 21600,
+      "ResultPath": "$.acknowledgement",
+      "Catch": [{ "ErrorEquals": ["States.Timeout"], "ResultPath": null, "Next": "NotAcknowledged" }],
+      "Next": "WaitForResolution"
+    },
+    "NotAcknowledged": { "Type": "Fail", "Error": "NotAcknowledged", "Cause": "No acknowledgement within 6 hours of escalation." },
+    "WaitForResolution": {
+      "Type": "Task",
+      "Comment": "Paused until the caretaker resolves the incident.",
+      "Resource": "arn:aws:states:::lambda:invoke.waitForTaskToken",
+      "Parameters": {
+        "FunctionName": "${RegisterTokenFunctionArn}",
+        "Payload": {
+          "buildingId.$": "$.detail.buildingId",
+          "incidentId.$": "$.detail.incidentId",
+          "awaiting": "resolution",
+          "taskToken.$": "$$.Task.Token"
+        }
+      },
+      "TimeoutSeconds": 86400,
+      "ResultPath": "$.resolution",
+      "Catch": [{ "ErrorEquals": ["States.Timeout"], "ResultPath": null, "Next": "NotResolved" }],
+      "Next": "CloseIncident"
+    },
+    "NotResolved": { "Type": "Fail", "Error": "NotResolved", "Cause": "Not resolved within 24 hours." },
+    "CloseIncident": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::dynamodb:updateItem",
+      "Parameters": {
+        "TableName": "${TableName}",
+        "Key": {
+          "PK": { "S.$": "States.Format('BUILDING#{}', $.detail.buildingId)" },
+          "SK": { "S.$": "States.Format('INCIDENT#{}', $.detail.incidentId)" }
+        },
+        "UpdateExpression": "SET workflowClosedAt = :at REMOVE taskToken, awaiting, awaitingSince",
+        "ExpressionAttributeValues": { ":at": { "S.$": "$$.State.EnteredTime" } }
+      },
+      "ResultPath": null,
+      "Next": "NotifyResolved"
+    },
+    "NotifyResolved": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "${CaretakerTopicArn}",
+        "Subject": "TankSaathi: incident resolved",
+        "Message.$": "States.Format('Resolved ({}). Original alert:\n\n{}', $.resolution.resolution, $.detail.notice.body)"
+      },
+      "Retry": [{ "ErrorEquals": ["States.TaskFailed"], "IntervalSeconds": 2, "MaxAttempts": 3, "BackoffRate": 2 }],
+      "ResultPath": null,
+      "Next": "Done"
+    },
+    "Done": { "Type": "Succeed" }
+  }
+}

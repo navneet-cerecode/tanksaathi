@@ -4,6 +4,7 @@ import { rmSync } from "node:fs";
 
 const handlers = {
   ingest: "src/ingest/handler.ts",
+  "register-token": "src/workflow/register-token.ts",
 };
 
 rmSync("dist", { recursive: true, force: true });

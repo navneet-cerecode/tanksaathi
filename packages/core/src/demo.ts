@@ -8,6 +8,8 @@ export const DEMO_BUILDING: BuildingConfig = {
   utcOffsetMinutes: 330,
   // 80 residents × 90 L (ASSUMPTION A6).
   dailyDemandL: 7_200,
+  // Short so the demo shows escalation; real buildings default to 30 min.
+  escalateAfterMinutes: 2,
 };
 
 export const DEMO_TANK: TankConfig = {

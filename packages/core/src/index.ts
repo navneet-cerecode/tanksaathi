@@ -11,3 +11,4 @@ export * from "./state";
 export * from "./status";
 export * from "./tank";
 export * from "./telemetry";
+export * from "./notice";

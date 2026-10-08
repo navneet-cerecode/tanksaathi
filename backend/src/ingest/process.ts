@@ -49,7 +49,16 @@ export interface TankStore {
 export type RejectReason = "bad-topic" | "bad-payload" | "identity-mismatch" | "unknown-tank" | "no-valid-readings";
 
 export type IngestOutcome =
-  | { ok: true; buildingId: string; tankId: string; channel: Channel; accepted: number; rejected: number; state: TankState }
+  | {
+      ok: true;
+      buildingId: string;
+      tankId: string;
+      channel: Channel;
+      accepted: number;
+      rejected: number;
+      state: TankState;
+      context: TankContext;
+    }
   | { ok: false; reason: RejectReason };
 
 /**
@@ -106,5 +115,6 @@ export async function processTelemetry(event: Record<string, unknown>, store: Ta
     accepted: valid.length,
     rejected: message.readings.length - valid.length,
     state,
+    context,
   };
 }

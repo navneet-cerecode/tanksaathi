@@ -12,6 +12,8 @@ export interface BuildingConfig {
   /** Planning figure: residents × litres per person per day. */
   dailyDemandL: number;
   staleAfterMinutes?: number;
+  /** Escalate an unacknowledged incident after this long (ASSUMPTION A9). */
+  escalateAfterMinutes?: number;
   anomaly?: Partial<AnomalyConfig>;
 }
 

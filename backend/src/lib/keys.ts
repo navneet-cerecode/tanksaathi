@@ -18,3 +18,6 @@ const iso = (t: number) => new Date(t).toISOString();
 export const readingSk = (t: number, seq: number) => `R#${iso(t)}#${String(seq).padStart(12, "0")}`;
 export const readingSkFloor = (t: number) => `R#${iso(t)}`;
 export const READING_SK_CEILING = "R#~";
+
+export const incidentSk = (incidentId: string) => `INCIDENT#${incidentId}`;
+export const openLockSk = (type: string) => `OPEN#${type}`;

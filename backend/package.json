@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "build": "node scripts/build.mjs",
     "validate": "sam validate --lint",
-    "deploy": "npm run build && sam deploy"
+    "deploy": "node scripts/deploy.mjs"
   },
   "devDependencies": {
     "@aws-sdk/client-iot": "^3.1147.0",
@@ -25,7 +25,11 @@
     "@aws-lambda-powertools/logger": "^2.36.0",
     "@aws-lambda-powertools/metrics": "^2.36.0",
     "@aws-sdk/client-dynamodb": "^3.1147.0",
+    "@aws-sdk/client-eventbridge": "^3.1147.0",
+    "@aws-sdk/client-sfn": "^3.1147.0",
     "@aws-sdk/lib-dynamodb": "^3.1147.0",
-    "@tanksaathi/core": "0.1.0"
+    "@cedar-policy/cedar-wasm": "^4.13.0",
+    "@tanksaathi/core": "0.1.0",
+    "zod": "^4.6.5"
   }
 }
