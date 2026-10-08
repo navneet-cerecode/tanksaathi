@@ -1,9 +1,9 @@
 {
   "name": "tanksaathi",
   "private": true,
-  "description": "Heat-aware rooftop water-tank and leak early warning for shared buildings. Built by Team NIcobarAndaman for Environmental Hacks (Bharat Builds Tour).",
+  "description": "Heat-aware rooftop water-tank and leak early warning for shared buildings. Built by Team NicobarAndaman for Environmental Hacks (Bharat Builds Tour).",
   "license": "MIT",
-  "author": "Team NIcobarAndaman",
+  "author": "Team NicobarAndaman",
   "workspaces": [
     "packages/*"
   ],
