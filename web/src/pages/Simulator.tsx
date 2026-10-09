@@ -39,6 +39,7 @@ export function Simulator({ buildingId, onChanged }: { buildingId: string; onCha
   }
 
   async function reset() {
+    if (!window.confirm("Reset clears every reading and alert for this demo building, including the run you just made. Continue?")) return;
     setBusy("reset");
     try {
       const r = await api.resetDemo(buildingId);
@@ -72,7 +73,7 @@ export function Simulator({ buildingId, onChanged }: { buildingId: string; onCha
         <li className="flex flex-col gap-3 border-t border-rule py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="font-medium">Reset</p>
-            <p className="text-label text-ink-2">Clears readings, alerts and running workflows for this demo building.</p>
+            <p className="text-label text-ink-2">Clears readings, alerts and running workflows for this demo building. Reset first, then run a scenario.</p>
           </div>
           <Button variant="ghost" disabled={busy !== null} onClick={reset} className="sm:w-40">
             {busy === "reset" ? "Resetting…" : "Reset demo"}
