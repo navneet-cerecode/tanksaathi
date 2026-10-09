@@ -1,0 +1,157 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "./styles/shadcn-tailwind.css";
+@import "@fontsource/ibm-plex-sans/400.css";
+@import "@fontsource/ibm-plex-sans/500.css";
+@import "@fontsource/ibm-plex-sans/600.css";
+@import "@fontsource/ibm-plex-sans-devanagari/400.css";
+@import "@fontsource/ibm-plex-sans-devanagari/500.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+
+/* Tokens from DESIGN.md §5. Components use these names, never raw hex. */
+:root {
+  --paper: #f6f2e7;
+  --surface: #fffdf7;
+  --ink: #17202e;
+  --ink-2: #465063;
+  --rule: #d8cfba;
+  --water: #0b6b66;
+  --water-tint: #dcedea;
+  --amber-ink: #8a5300;
+  --amber-fill: #f3c969;
+  --vermilion: #b42318;
+  --vermilion-tint: #f8e1dd;
+  --focus: #1d4ed8;
+  --sim: #e9e1cc;
+  --sim-2: #e2d8bf;
+  /* Chart-only categorical pair, validated with the dataviz palette checker (CVD ΔE 14.1, normal 22.5) */
+  --chart-observed: #008c80;
+  --chart-expected: #7650b8;
+
+  /* shadcn variable names mapped onto our tokens */
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: var(--surface);
+  --secondary: var(--surface);
+  --secondary-foreground: var(--ink);
+  --muted: var(--sim);
+  --muted-foreground: var(--ink-2);
+  --accent: var(--water-tint);
+  --accent-foreground: var(--ink);
+  --destructive: var(--vermilion);
+  --border: var(--rule);
+  --input: var(--ink-2);
+  --ring: var(--focus);
+  --radius: 0.25rem;
+}
+
+@theme inline {
+  --font-sans: "IBM Plex Sans", "IBM Plex Sans Devanagari", system-ui, sans-serif;
+  --font-heading: var(--font-sans);
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-rule: var(--rule);
+  --color-water: var(--water);
+  --color-water-tint: var(--water-tint);
+  --color-amber-ink: var(--amber-ink);
+  --color-amber-fill: var(--amber-fill);
+  --color-vermilion: var(--vermilion);
+  --color-vermilion-tint: var(--vermilion-tint);
+  --color-focus: var(--focus);
+  --color-sim: var(--sim);
+  --color-chart-observed: var(--chart-observed);
+  --color-chart-expected: var(--chart-expected);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: 0.25rem;
+  --radius-md: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.5rem;
+
+  /* Type scale (DESIGN.md §4) */
+  --text-figure: 3.5rem;
+  --text-figure--line-height: 3.75rem;
+  --text-title: 1.375rem;
+  --text-title--line-height: 1.75rem;
+  --text-heading: 1.125rem;
+  --text-heading--line-height: 1.5rem;
+  --text-label: 0.875rem;
+  --text-label--line-height: 1.25rem;
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.125rem;
+
+  --shadow-sheet: 0 8px 24px rgb(23 32 46 / 0.14);
+  --ease-enter: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-variant-numeric: tabular-nums;
+    min-height: 100dvh;
+  }
+  :lang(hi) {
+    font-family: "IBM Plex Sans Devanagari", "IBM Plex Sans", sans-serif;
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  button,
+  a,
+  [role="radio"] {
+    touch-action: manipulation;
+  }
+}
+
+/* Simulator disclosure ribbon (DESIGN.md §11) */
+.sim-hatch {
+  background: repeating-linear-gradient(135deg, var(--sim) 0 8px, var(--sim-2) 8px 16px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

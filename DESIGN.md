@@ -1,6 +1,6 @@
 # TankSaathi design system
 
-Status: **v0, awaiting team approval.** This file governs every UI decision. Skills and generators (UI UX Pro Max, shadcn/ui, Emil Kowalski's skills, Vercel guidelines, Impeccable) advise; they don't override it.
+Status: **v1, approved by Team NicobarAndaman on 2026-10-08.** This file governs every UI decision. Skills and generators (UI UX Pro Max, shadcn/ui, Emil Kowalski's skills, Vercel guidelines, Impeccable) advise; they don't override it.
 
 ## 1. Atmosphere
 
@@ -69,6 +69,8 @@ Light only. TankSaathi is outdoor-first, and dark UIs wash out in direct sun. Co
 | `vermilion-tint` | `#F8E1DD` | — | Incident strip background |
 | `focus` | `#1D4ED8` | 6.0 : 1 | 2 px focus ring, offset 2 px |
 | `sim` | `#E9E1CC` + diagonal hatch | ink on it | Simulator disclosure ribbon |
+| `chart-observed` | `#008C80` | 3 : 1+ | Chart marks only: observed use |
+| `chart-expected` | `#7650B8` | 3 : 1+ | Chart marks only: expected use (validated pair: CVD ΔE 14.1, normal-vision ΔE 22.5) |
 
 Rules: components use tokens, never raw hex. Informative graphics (gauge ticks, chart marks) need at least 3:1, so they use `ink`, `ink-2`, `water` or `vermilion`, never `rule`.
 
@@ -94,7 +96,7 @@ Comfortable on touch: list rows ≥ 48 px, primary buttons 48 px high, minimum t
 
 - **Tank gauge:** an upright tank outline with ruled ticks every 10%, labels at 25/50/75, `water-tint` fill, and the level as text beside it ("62%"). It never stands alone without the number.
 - **Level over 24 h:** an `ink` line with a light `water-tint` area; x-axis in local time (IST); y-axis 0–100%.
-- **Hourly use vs expected:** observed bars in `ink-2`, expected as a dashed `water` line. Flagged hours get a `vermilion` marker **and** a text label ("above expected").
+- **Hourly use vs expected:** observed bars in `chart-observed`, expected as a dashed `chart-expected` line (one shared L/h axis, legend + direct label). Flagged hours get a `vermilion` marker **and** a text label ("above expected").
 - Every chart has a one-paragraph text summary above it and a "Show as table" toggle (research: anomaly charts need a list/table fallback; never colour alone).
 - No chart animation loops; the line draws once (§13).
 

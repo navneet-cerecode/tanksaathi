@@ -417,7 +417,47 @@ Resources:
         Scenario: { Type: HttpApi, Properties: { ApiId: !Ref HttpApi, Path: "/buildings/{buildingId}/demo/scenarios", Method: POST } }
         Reset: { Type: HttpApi, Properties: { ApiId: !Ref HttpApi, Path: "/buildings/{buildingId}/demo/reset", Method: POST } }
 
+  # ---------- Web hosting ----------
+  WebApp:
+    Type: AWS::Amplify::App
+    Properties:
+      Name: !Sub tanksaathi-${Stage}
+      Description: TankSaathi web app (manual deploys from web/dist). Team NicobarAndaman.
+      Platform: WEB
+      CustomRules:
+        # Single-page app: send every path without a file extension to index.html.
+        - Source: '</^[^.]+$|\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json|webp|webmanifest)$)([^.]+$)/>'
+          Target: /index.html
+          Status: "200"
+      CustomHeaders: |
+        customHeaders:
+          - pattern: '**'
+            headers:
+              - key: Strict-Transport-Security
+                value: max-age=31536000; includeSubDomains
+              - key: X-Content-Type-Options
+                value: nosniff
+              - key: Referrer-Policy
+                value: strict-origin-when-cross-origin
+              - key: X-Frame-Options
+                value: DENY
+      Tags:
+        - { Key: Project, Value: TankSaathi }
+        - { Key: Team, Value: NicobarAndaman }
+
+  WebBranch:
+    Type: AWS::Amplify::Branch
+    Properties:
+      AppId: !GetAtt WebApp.AppId
+      BranchName: main
+      Stage: PRODUCTION
+      EnableAutoBuild: false
+
 Outputs:
+  WebAppId:
+    Value: !GetAtt WebApp.AppId
+  WebUrl:
+    Value: !Sub https://main.${WebApp.DefaultDomain}
   ApiUrl:
     Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com
   UserPoolId:

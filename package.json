@@ -6,7 +6,8 @@
   "author": "Team NicobarAndaman",
   "workspaces": [
     "packages/*",
-    "backend"
+    "backend",
+    "web"
   ],
   "scripts": {
     "test": "npm test --workspaces --if-present",
