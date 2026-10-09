@@ -14,8 +14,8 @@ Parameters:
     Description: Inbox for caretaker and escalation alerts (SNS sends a confirmation link).
   AppUrl:
     Type: String
-    Default: http://localhost:5173
-    Description: Base URL of the web app, used in alert links.
+    Default: http://127.0.0.1:5173
+    Description: Base URL of the web app, used in alert links and CORS.
   IotDataEndpoint:
     Type: String
     Description: Account's IoT data endpoint (aws iot describe-endpoint --endpoint-type iot:Data-ATS).
@@ -26,8 +26,6 @@ Parameters:
     AllowedValues: ["true", "false"]
     Description: Off until Bedrock access is unblocked on this account; standard text is used meanwhile.
 
-Conditions:
-  AppIsLocal: !Equals [!Ref AppUrl, "http://localhost:5173"]
 
 Globals:
   Function:
@@ -402,7 +400,8 @@ Resources:
               issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}
               audience: [!Ref UserPoolClient]
       CorsConfiguration:
-        AllowOrigins: !If [AppIsLocal, ["http://localhost:5173"], [!Ref AppUrl, "http://localhost:5173"]]
+        # Plain list: SAM drops a CorsConfiguration built with !If.
+        AllowOrigins: [!Ref AppUrl, "http://localhost:5173"]
         AllowHeaders: [authorization, content-type]
         AllowMethods: [GET, POST, PUT, OPTIONS]
         MaxAge: 600

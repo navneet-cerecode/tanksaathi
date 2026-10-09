@@ -68,17 +68,17 @@ export function AppShell({
         </div>
       </header>
 
-      <main className="flex-1 px-4 pb-6 pt-4 md:px-8">{children}</main>
+      <main className="flex-1 px-4 pb-6 pt-4 md:order-2 md:px-8">{children}</main>
 
       {caretaker && (
-        <nav aria-label="Sections" className="sticky bottom-0 flex border-t border-rule bg-paper pb-[env(safe-area-inset-bottom)] md:static md:order-first md:border-b md:border-t-0">
+        <nav aria-label="Sections" className="sticky bottom-0 flex border-t border-rule bg-paper pb-[env(safe-area-inset-bottom)] md:static md:order-1 md:border-b md:border-t-0">
           <Tab to="/overview" icon={<Droplet className="size-5" aria-hidden />} label="Overview" />
           <Tab to="/tank" icon={<ChartLine className="size-5" aria-hidden />} label="Tank" />
           <Tab to="/incidents" icon={<Bell className="size-5" aria-hidden />} label={openAlerts ? `Alerts · ${openAlerts}` : "Alerts"} />
           {operator && <Tab to="/simulator" icon={<FlaskConical className="size-5" aria-hidden />} label="Simulator" />}
         </nav>
       )}
-      <footer className="border-t border-rule px-4 py-3 text-caption text-ink-2 md:px-8">
+      <footer className="border-t border-rule px-4 py-3 text-caption text-ink-2 md:order-3 md:px-8">
         Team NicobarAndaman · Environmental Hacks 2026
       </footer>
     </div>

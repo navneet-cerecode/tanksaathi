@@ -12,7 +12,18 @@ import { Overview } from "@/pages/Overview";
 import { ResidentStatus } from "@/pages/ResidentStatus";
 import { Simulator } from "@/pages/Simulator";
 // Charts are the heaviest dependency; load them only on the tank screen.
-const TankDetail = lazy(() => import("@/pages/TankDetail").then((m) => ({ default: m.TankDetail })));
+const TankDetail = lazy(() =>
+  import("@/pages/TankDetail")
+    .then((m) => ({ default: m.TankDetail }))
+    .catch((err) => {
+      // After a redeploy an open tab may ask for an old chunk; reload once to pick up the new build.
+      if (!sessionStorage.getItem("chunk-reloaded")) {
+        sessionStorage.setItem("chunk-reloaded", "1");
+        window.location.reload();
+      }
+      throw err;
+    }),
+);
 
 const TANK_ID = "roof-1";
 

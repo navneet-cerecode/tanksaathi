@@ -16,7 +16,6 @@ Everything below was written by others and is used under its licence. Versions a
 | Sonner | 2.0 | MIT | Toasts |
 | Recharts | 3.10 | MIT | Charts |
 | Lucide React | 1.53 | ISC | Icons |
-| GSAP, @gsap/react | 3.15 / 2.1 | GreenSock "Standard No Charge" licence (https://gsap.com/standard-license) | Tank gauge transition |
 | AWS Amplify JS (auth only) | 6.22 | Apache-2.0 | Cognito sign-in |
 | IBM Plex Sans, Sans Devanagari, Mono (@fontsource) | 5.x | SIL Open Font License 1.1 | Typography |
 | AWS SDK for JavaScript v3 | 3.x | Apache-2.0 | AWS calls |

@@ -130,7 +130,7 @@ Labels above fields; helper text below; errors inline in words, linked with `ari
 | Simulator run | Level line draws once | 600 ms | Static |
 | First load | Content fades in, ≤ 3 groups | ≤ 300 ms total | None |
 
-Transform and opacity only. Exits are faster than entrances. Nothing loops. Numbers never animate continuously. Every workflow works with motion off.
+Implemented with CSS transitions (GSAP was evaluated and removed: frame-driven tweens left the gauge empty in background tabs). Transform and opacity only. Exits are faster than entrances. Nothing loops. Numbers never animate continuously. Every workflow works with motion off.
 
 ## 13. Accessibility (WCAG 2.2 AA)
 

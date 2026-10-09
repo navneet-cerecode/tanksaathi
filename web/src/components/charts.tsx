@@ -92,7 +92,7 @@ export function HourlyUseChart({ hourly, offset }: { hourly: HourlyUse[]; offset
       </figcaption>
       <div className="mb-2 flex flex-wrap gap-4 text-caption text-ink-2">
         <span className="flex items-center gap-1.5">
-          <span className="inline-block size-3 rounded-[2px] bg-chart-observed" aria-hidden /> Observed use
+          <span className="inline-block size-3 rounded-[2px] bg-chart-observed" aria-hidden /> Observed use (litres per hour)
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-0.5 w-4 border-t-2 border-dashed border-chart-expected" aria-hidden /> Expected for that hour
@@ -106,7 +106,7 @@ export function HourlyUseChart({ hourly, offset }: { hourly: HourlyUse[]; offset
           <ComposedChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: -8 }} barCategoryGap={2}>
             <CartesianGrid stroke="var(--rule)" vertical={false} />
             <XAxis dataKey="mid" type="number" domain={["dataMin - 1800000", "dataMax + 1800000"]} scale="time" tickFormatter={(t) => hhmm(t - 30 * 60_000, offset)} {...axis} minTickGap={28} />
-            <YAxis tickFormatter={(v) => `${v}`} {...axis} label={{ value: "L/h", position: "insideTopLeft", offset: 0, dx: 24, fill: "var(--ink-2)", fontSize: 12 }} />
+            <YAxis tickFormatter={(v) => `${v}`} {...axis} />
             <Tooltip
               content={
                 <Tip

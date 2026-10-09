@@ -19,9 +19,11 @@ Only capabilities at level 4 or higher appear in the demo video as working.
 | Acknowledge → inspect → resolve resumes the workflow | 4 | Smoke test: both task tokens resumed; execution SUCCEEDED; timeline recorded |
 | Explanation step (standard EN/HI text) | 4 | Smoke test: incident carries a Hindi + English explanation |
 | Demo simulator via API (IoT Core publish), rate limit, reset | 4 | Smoke test: run accepted, second run 429, reset stopped running workflows |
-| Web app on Amplify Hosting | 4 | Index, assets (`text/css`) and email deep links return 200; HSTS, X-Frame-Options, nosniff headers present |
+| Web app on Amplify Hosting (CORS fixed 2026-10-09: SAM had dropped a CorsConfiguration built with `!If`) | 4 | Index, assets (`text/css`) and email deep links return 200; HSTS, X-Frame-Options, nosniff headers present |
 | Sign-in screen: layout, validation, labels | 5 | Checked at 360, 390, 768, 1280 and 1440 px wide: no horizontal scroll, 48 px controls, linked error message |
-| Caretaker, resident, incident and simulator screens in the browser | 7 | Data paths verified through the API; the in-browser click-through needs a team member to sign in |
+| Caretaker journey in the browser (live site, signed in as the demo operator) | 5 | 2026-10-09: Simulator → Reset → Sustained leak (111 readings over IoT Core) → overview alert and gauge → tank charts → incident → Hindi explanation → Acknowledge → Start inspection → Resolve with validation and note; Step Functions execution SUCCEEDED; no console errors; 375 px and 1280 px layouts checked |
+| Stale-sensor banner at read time | 5 | Appeared on its own once the last reading was 21 minutes old |
+| Resident screen in the browser | 7 | Needs the resident account signed in; API-level checks pass |
 | CloudWatch dashboard and four alarms | 3 | Deployed; alarms haven't fired |
 | AWS Budgets | 4 | Budget reads $0.00 actual spend |
 | Amazon Bedrock explanations | 8 | Account-level "Operation not allowed" on every model and region tried (new-account restriction). Code and IAM are in place behind `BedrockEnabled=false` |

@@ -8,6 +8,9 @@
 @import "@fontsource/ibm-plex-sans-devanagari/500.css";
 @import "@fontsource/ibm-plex-mono/400.css";
 
+/* Light-only app (DESIGN.md §5): bind dark: utilities to a class we never set, so OS dark mode can't restyle components. */
+@custom-variant dark (&:is(.dark *));
+
 /* Tokens from DESIGN.md §5. Components use these names, never raw hex. */
 :root {
   --paper: #f6f2e7;
