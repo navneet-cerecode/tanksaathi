@@ -18,6 +18,15 @@ export function ago(t: number | null, now: number): string {
   return h === 1 ? "1 hour ago" : `${h} hours ago`;
 }
 
+/** Hindi relative time for the resident screen. */
+export function agoHi(t: number | null, now: number): string {
+  if (t === null) return "कभी नहीं";
+  const min = Math.max(0, Math.round((now - t) / 60_000));
+  if (min < 1) return "अभी";
+  if (min < 60) return `${min} मिनट पहले`;
+  return `${Math.round(min / 60)} घंटे पहले`;
+}
+
 export const litres = (l: number | null) => (l === null ? "—" : `${Math.round(l).toLocaleString("en-IN")} L`);
 export const pct = (p: number | null) => (p === null ? "—" : `${Math.round(p)}%`);
 

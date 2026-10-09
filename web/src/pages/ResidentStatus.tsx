@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ErrorBlock, LoadingBlock } from "@/components/bits";
 import type { ResidentView } from "@/lib/api";
 import { residentCopy, ui, type Lang } from "@/lib/copy";
-import { ago, hhmm } from "@/lib/format";
+import { ago, agoHi, hhmm } from "@/lib/format";
 import { useNow } from "@/lib/usePoll";
 import { cn } from "@/lib/utils";
 
@@ -40,8 +40,8 @@ export function ResidentStatus({ view, error, onRetry }: { view: ResidentView | 
       )}
       {view.stale && <p className="mt-4 bg-amber-fill px-3 py-2 text-label">{text.stale}</p>}
       {view.updatedAt && (
-        <p className="mt-4 text-caption text-ink-2" lang="en">
-          {text.updated}: {ago(view.updatedAt, now)} · {hhmm(view.updatedAt)} IST
+        <p className="mt-4 text-caption text-ink-2">
+          {text.updated}: {lang === "hi" ? agoHi(view.updatedAt, now) : ago(view.updatedAt, now)} · {hhmm(view.updatedAt)} IST
         </p>
       )}
       <button

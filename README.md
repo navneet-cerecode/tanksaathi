@@ -95,6 +95,7 @@ npx tsx scripts/create-demo-users.ts <UserPoolId>
 npx tsx scripts/sim-publish.ts leak  # publish a scenario over MQTT
 npx tsx scripts/api-smoke.ts         # end-to-end checks with real Cognito tokens
 npx tsx scripts/check-topic-isolation.ts
+npx tsx scripts/demo.ts reset         # or: normal | heat | leak | stale | recovery | resolve (through the API as the operator)
 
 cd ../web
 node scripts/deploy-web.mjs          # build and deploy to Amplify Hosting

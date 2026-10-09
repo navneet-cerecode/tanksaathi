@@ -23,7 +23,7 @@ Only capabilities at level 4 or higher appear in the demo video as working.
 | Sign-in screen: layout, validation, labels | 5 | Checked at 360, 390, 768, 1280 and 1440 px wide: no horizontal scroll, 48 px controls, linked error message |
 | Caretaker journey in the browser (live site, signed in as the demo operator) | 5 | 2026-10-09: Simulator → Reset → Sustained leak (111 readings over IoT Core) → overview alert and gauge → tank charts → incident → Hindi explanation → Acknowledge → Start inspection → Resolve with validation and note; Step Functions execution SUCCEEDED; no console errors; 375 px and 1280 px layouts checked |
 | Stale-sensor banner at read time | 5 | Appeared on its own once the last reading was 21 minutes old |
-| Resident screen in the browser | 7 | Needs the resident account signed in; API-level checks pass |
+| Resident screen in the browser (live site, signed in as the demo resident) | 5 | 2026-10-09: Normal → Being checked during a live leak → Use carefully after resolution (≈4 h left); Hindi toggle with lang="hi"; tank, incidents, Block B and simulator calls return 403 from the resident session; /overview redirects to /status; no console errors |
 | CloudWatch dashboard and four alarms | 3 | Deployed; alarms haven't fired |
 | AWS Budgets | 4 | Budget reads $0.00 actual spend |
 | Amazon Bedrock explanations | 8 | Account-level "Operation not allowed" on every model and region tried (new-account restriction). Code and IAM are in place behind `BedrockEnabled=false` |
