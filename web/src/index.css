@@ -129,7 +129,10 @@
   :lang(hi) {
     font-family: "IBM Plex Sans Devanagari", "IBM Plex Sans", sans-serif;
   }
-  :focus-visible {
+  :focus-visible,
+  input:focus,
+  textarea:focus,
+  select:focus {
     outline: 2px solid var(--focus);
     outline-offset: 2px;
   }

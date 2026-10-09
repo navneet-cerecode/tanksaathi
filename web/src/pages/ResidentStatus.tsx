@@ -8,10 +8,10 @@ import { useNow } from "@/lib/usePoll";
 import { cn } from "@/lib/utils";
 
 const TONE = {
-  normal: { icon: CircleCheck, className: "text-water", band: "border-water" },
-  conserve: { icon: Droplets, className: "text-amber-ink", band: "border-amber-ink" },
-  "refill-planned": { icon: Clock, className: "text-amber-ink", band: "border-amber-ink" },
-  incident: { icon: CircleAlert, className: "text-vermilion", band: "border-vermilion" },
+  normal: { icon: CircleCheck, className: "text-water" },
+  conserve: { icon: Droplets, className: "text-amber-ink" },
+  "refill-planned": { icon: Clock, className: "text-amber-ink" },
+  incident: { icon: CircleAlert, className: "text-vermilion" },
 } as const;
 
 export function ResidentStatus({ view, error, onRetry }: { view: ResidentView | null; error: Error | null; onRetry: () => void }) {
@@ -30,7 +30,7 @@ export function ResidentStatus({ view, error, onRetry }: { view: ResidentView | 
       {view.noData ? (
         <p className="mt-6 text-title">{text.noData}</p>
       ) : (
-        <section aria-live="polite" aria-atomic="true" className={cn("mt-4 border-l-4 pl-4", tone.band)}>
+        <section aria-live="polite" aria-atomic="true" className="mt-4 border-t border-rule pt-4">
           <p className={cn("flex items-center gap-2 text-[1.75rem] font-semibold leading-[2.125rem]", tone.className)}>
             <Icon className="size-7 shrink-0" aria-hidden />
             {copy.word}
