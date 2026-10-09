@@ -26,6 +26,7 @@
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.36.0",
     "@aws-lambda-powertools/metrics": "^2.36.0",
+    "@aws-sdk/client-bedrock-runtime": "^3.1148.0",
     "@aws-sdk/client-dynamodb": "^3.1147.0",
     "@aws-sdk/client-eventbridge": "^3.1147.0",
     "@aws-sdk/client-iot-data-plane": "^3.1147.0",

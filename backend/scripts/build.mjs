@@ -6,6 +6,7 @@ const handlers = {
   ingest: "src/ingest/handler.ts",
   "register-token": "src/workflow/register-token.ts",
   api: "src/api/handler.ts",
+  explain: "src/workflow/explain.ts",
 };
 
 rmSync("dist", { recursive: true, force: true });

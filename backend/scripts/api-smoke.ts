@@ -57,7 +57,7 @@ async function until<T>(fn: () => Promise<T>, done: (v: T) => boolean, timeoutMs
 }
 
 const A = "/buildings/demo-hostel-a";
-const [resident, caretaker, operator, caretakerB] = await Promise.all(["resident", "caretaker", "operator", "caretakerB"].map(token));
+const [resident, caretaker, operator, caretakerB] = (await Promise.all(["resident", "caretaker", "operator", "caretakerB"].map(token))) as [string, string, string, string];
 
 console.log("— access boundaries");
 check("no token → 401", (await call(null, "GET", "/me")).status, 401);
@@ -102,6 +102,7 @@ check("resolve resumes the workflow", `${resolve.status} ${resolve.body.workflow
 const detail = (await call(caretaker, "GET", `${A}/incidents/${incident.incidentId}`)).body;
 check("timeline has opened → acknowledge → inspect → resolve", detail.timeline.map((e: { action: string }) => e.action).join(" → "), "opened → acknowledge → inspect → resolve");
 check("task tokens never leave the API", "taskToken" in detail, false);
+check("explanation attached by the workflow (standard text; Bedrock blocked on this account)", `${detail.explanation?.source} ${/[ऀ-ॿ]/.test(detail.explanation?.hi ?? "")}`, "standard true");
 const execution = await until(
   () => sfn.send(new DescribeExecutionCommand({ executionArn: detail.workflowExecution })),
   (e) => e.status !== "RUNNING",

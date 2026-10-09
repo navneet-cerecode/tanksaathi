@@ -25,6 +25,8 @@ function announcer(context: TankContext) {
       publishIncidentOpened(eventBridge, busName, {
         ...incident,
         escalateAfterSeconds: (context.building.escalateAfterMinutes ?? 30) * 60,
+        buildingName: context.building.name,
+        utcOffsetMinutes: context.building.utcOffsetMinutes,
         notice: incidentNotice({
           buildingName: context.building.name,
           tankName: context.tank.name,

@@ -7,6 +7,8 @@ export const EVENT_SOURCE = "tanksaathi.ingest";
 export interface IncidentOpenedDetail extends Incident {
   notice: Notice;
   escalateAfterSeconds: number;
+  buildingName: string;
+  utcOffsetMinutes: number;
 }
 
 export async function publishIncidentOpened(client: EventBridgeClient, busName: string, detail: IncidentOpenedDetail) {

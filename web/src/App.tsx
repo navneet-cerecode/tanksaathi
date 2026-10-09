@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router";
 import { AppShell } from "@/components/AppShell";
 import { LoadingBlock } from "@/components/bits";
@@ -11,7 +11,8 @@ import { Login } from "@/pages/Login";
 import { Overview } from "@/pages/Overview";
 import { ResidentStatus } from "@/pages/ResidentStatus";
 import { Simulator } from "@/pages/Simulator";
-import { TankDetail } from "@/pages/TankDetail";
+// Charts are the heaviest dependency; load them only on the tank screen.
+const TankDetail = lazy(() => import("@/pages/TankDetail").then((m) => ({ default: m.TankDetail })));
 
 const TANK_ID = "roof-1";
 
@@ -31,7 +32,7 @@ function CaretakerApp({ session, onSignOut }: { session: Session; onSignOut: () 
     <AppShell session={session} simulated={onSimulator || (tank.data?.simulated ?? false)} openAlerts={openCount} onSignOut={onSignOut}>
       <Routes>
         <Route path="/overview" element={<Overview view={tank.data} incidents={list ?? []} error={tank.error} onRetry={refreshAll} onChanged={refreshAll} />} />
-        <Route path="/tank" element={<TankDetail view={tank.data} error={tank.error} onRetry={tank.refresh} />} />
+        <Route path="/tank" element={<Suspense fallback={<LoadingBlock />}><TankDetail view={tank.data} error={tank.error} onRetry={tank.refresh} /></Suspense>} />
         <Route path="/incidents" element={<IncidentList incidents={list} error={incidents.error} onRetry={incidents.refresh} />} />
         <Route path="/incidents/:buildingId/:incidentId" element={<IncidentDetail onChanged={refreshAll} />} />
         {session.roles.includes("demo-operator") && <Route path="/simulator" element={<Simulator buildingId={b} onChanged={refreshAll} />} />}

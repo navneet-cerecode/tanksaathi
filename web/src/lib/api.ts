@@ -79,6 +79,7 @@ export interface Incident {
   timeline: TimelineEntry[];
   resolution?: Resolution;
   resolvedAt?: number;
+  explanation?: { source: "standard" | "bedrock"; en: string; hi: string; checklist: string[] };
 }
 
 export type IncidentAction =

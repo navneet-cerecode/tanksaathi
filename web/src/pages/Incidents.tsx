@@ -151,17 +151,7 @@ export function IncidentDetail({ onChanged }: { onChanged: () => void }) {
         )}
       </div>
 
-      {i.status !== "resolved" && (
-        <Section title="Check first" className="mt-6">
-          <ul className="list-disc space-y-1 pl-5 text-label">
-            <li>The overflow pipe on the roof tank</li>
-            <li>The float valve: is the inlet still running when the tank is full?</li>
-            <li>Toilet cisterns that keep running</li>
-            <li>Taps left open in bathrooms and kitchens</li>
-          </ul>
-          <p className="mt-2 text-caption text-ink-2">Standard message</p>
-        </Section>
-      )}
+      {i.status !== "resolved" && <Explanation incident={i} />}
 
       <Section title="Timeline">
         <ol className="space-y-3">
@@ -182,6 +172,40 @@ export function IncidentDetail({ onChanged }: { onChanged: () => void }) {
 
       <ResolveDialog open={resolveOpen} onOpenChange={setResolveOpen} busy={busy === "resolve"} onResolve={(resolution, note) => act({ action: "resolve", resolution, note: note || undefined }, "resolve")} />
     </div>
+  );
+}
+
+function Explanation({ incident }: { incident: Incident }) {
+  const [lang, setLang] = useState<"en" | "hi">("en");
+  const e = incident.explanation;
+  const checklist = e?.checklist ?? [
+    "Look at the overflow pipe on the roof tank: is water running out?",
+    "Check the float valve: is the inlet still running when the tank is full?",
+    "Listen for toilet cisterns that keep refilling.",
+    "Walk the bathrooms and kitchen for taps left open.",
+  ];
+  return (
+    <Section title="What this means" className="mt-6">
+      {e && (
+        <>
+          <p lang={lang} className="text-label">
+            {lang === "en" ? e.en : e.hi}
+          </p>
+          <button type="button" lang={lang === "en" ? "hi" : "en"} onClick={() => setLang(lang === "en" ? "hi" : "en")} className="mt-1 min-h-11 text-label text-water underline underline-offset-4">
+            {lang === "en" ? "हिन्दी में पढ़ें" : "Read in English"}
+          </button>
+        </>
+      )}
+      <h3 className="mt-3 text-label font-semibold">Check first</h3>
+      <ul className="mt-1 list-disc space-y-1 pl-5 text-label">
+        {checklist.map((c) => (
+          <li key={c}>{c}</li>
+        ))}
+      </ul>
+      <p className="mt-2 text-caption text-ink-2">
+        {e?.source === "bedrock" ? "AI-written summary (Amazon Bedrock) · check it against the readings" : "Standard message"}
+      </p>
+    </Section>
   );
 }
 

@@ -9,18 +9,36 @@
       "Parameters": {
         "TableName": "${TableName}",
         "Key": {
-          "PK": { "S.$": "States.Format('BUILDING#{}', $.detail.buildingId)" },
-          "SK": { "S.$": "States.Format('INCIDENT#{}', $.detail.incidentId)" }
+          "PK": {
+            "S.$": "States.Format('BUILDING#{}', $.detail.buildingId)"
+          },
+          "SK": {
+            "S.$": "States.Format('INCIDENT#{}', $.detail.incidentId)"
+          }
         },
         "UpdateExpression": "SET workflowExecution = :arn",
         "ConditionExpression": "attribute_exists(PK) AND attribute_not_exists(workflowExecution)",
-        "ExpressionAttributeValues": { ":arn": { "S.$": "$$.Execution.Id" } }
+        "ExpressionAttributeValues": {
+          ":arn": {
+            "S.$": "$$.Execution.Id"
+          }
+        }
       },
       "ResultPath": null,
-      "Catch": [{ "ErrorEquals": ["DynamoDB.ConditionalCheckFailedException"], "ResultPath": null, "Next": "AlreadyHandled" }],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "DynamoDB.ConditionalCheckFailedException"
+          ],
+          "ResultPath": null,
+          "Next": "AlreadyHandled"
+        }
+      ],
       "Next": "NotifyCaretaker"
     },
-    "AlreadyHandled": { "Type": "Succeed" },
+    "AlreadyHandled": {
+      "Type": "Succeed"
+    },
     "NotifyCaretaker": {
       "Type": "Task",
       "Resource": "arn:aws:states:::sns:publish",
@@ -29,8 +47,48 @@
         "Subject.$": "$.detail.notice.subject",
         "Message.$": "$.detail.notice.body"
       },
-      "Retry": [{ "ErrorEquals": ["States.TaskFailed"], "IntervalSeconds": 2, "MaxAttempts": 3, "BackoffRate": 2 }],
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
       "ResultPath": null,
+      "Next": "Explain"
+    },
+    "Explain": {
+      "Type": "Task",
+      "Comment": "Attach a plain-language EN/HI explanation (standard text, or Bedrock when enabled). Never blocks the alert.",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${ExplainFunctionArn}",
+        "Payload.$": "$"
+      },
+      "ResultPath": null,
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 2,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": null,
+          "Next": "WaitForAcknowledgement"
+        }
+      ],
       "Next": "WaitForAcknowledgement"
     },
     "WaitForAcknowledgement": {
@@ -48,7 +106,15 @@
       },
       "TimeoutSecondsPath": "$.detail.escalateAfterSeconds",
       "ResultPath": "$.acknowledgement",
-      "Catch": [{ "ErrorEquals": ["States.Timeout"], "ResultPath": null, "Next": "Escalate" }],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.Timeout"
+          ],
+          "ResultPath": null,
+          "Next": "Escalate"
+        }
+      ],
       "Next": "WaitForResolution"
     },
     "Escalate": {
@@ -59,7 +125,16 @@
         "Subject.$": "$.detail.notice.subject",
         "Message.$": "States.Format('ESCALATED: nobody has acknowledged this alert yet.\n\n{}', $.detail.notice.body)"
       },
-      "Retry": [{ "ErrorEquals": ["States.TaskFailed"], "IntervalSeconds": 2, "MaxAttempts": 3, "BackoffRate": 2 }],
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
       "ResultPath": null,
       "Next": "WaitForAcknowledgementAfterEscalation"
     },
@@ -77,10 +152,22 @@
       },
       "TimeoutSeconds": 21600,
       "ResultPath": "$.acknowledgement",
-      "Catch": [{ "ErrorEquals": ["States.Timeout"], "ResultPath": null, "Next": "NotAcknowledged" }],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.Timeout"
+          ],
+          "ResultPath": null,
+          "Next": "NotAcknowledged"
+        }
+      ],
       "Next": "WaitForResolution"
     },
-    "NotAcknowledged": { "Type": "Fail", "Error": "NotAcknowledged", "Cause": "No acknowledgement within 6 hours of escalation." },
+    "NotAcknowledged": {
+      "Type": "Fail",
+      "Error": "NotAcknowledged",
+      "Cause": "No acknowledgement within 6 hours of escalation."
+    },
     "WaitForResolution": {
       "Type": "Task",
       "Comment": "Paused until the caretaker resolves the incident.",
@@ -96,21 +183,41 @@
       },
       "TimeoutSeconds": 86400,
       "ResultPath": "$.resolution",
-      "Catch": [{ "ErrorEquals": ["States.Timeout"], "ResultPath": null, "Next": "NotResolved" }],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.Timeout"
+          ],
+          "ResultPath": null,
+          "Next": "NotResolved"
+        }
+      ],
       "Next": "CloseIncident"
     },
-    "NotResolved": { "Type": "Fail", "Error": "NotResolved", "Cause": "Not resolved within 24 hours." },
+    "NotResolved": {
+      "Type": "Fail",
+      "Error": "NotResolved",
+      "Cause": "Not resolved within 24 hours."
+    },
     "CloseIncident": {
       "Type": "Task",
       "Resource": "arn:aws:states:::dynamodb:updateItem",
       "Parameters": {
         "TableName": "${TableName}",
         "Key": {
-          "PK": { "S.$": "States.Format('BUILDING#{}', $.detail.buildingId)" },
-          "SK": { "S.$": "States.Format('INCIDENT#{}', $.detail.incidentId)" }
+          "PK": {
+            "S.$": "States.Format('BUILDING#{}', $.detail.buildingId)"
+          },
+          "SK": {
+            "S.$": "States.Format('INCIDENT#{}', $.detail.incidentId)"
+          }
         },
         "UpdateExpression": "SET workflowClosedAt = :at REMOVE taskToken, awaiting, awaitingSince",
-        "ExpressionAttributeValues": { ":at": { "S.$": "$$.State.EnteredTime" } }
+        "ExpressionAttributeValues": {
+          ":at": {
+            "S.$": "$$.State.EnteredTime"
+          }
+        }
       },
       "ResultPath": null,
       "Next": "NotifyResolved"
@@ -123,10 +230,21 @@
         "Subject": "TankSaathi: incident resolved",
         "Message.$": "States.Format('Resolved ({}). Original alert:\n\n{}', $.resolution.resolution, $.detail.notice.body)"
       },
-      "Retry": [{ "ErrorEquals": ["States.TaskFailed"], "IntervalSeconds": 2, "MaxAttempts": 3, "BackoffRate": 2 }],
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
       "ResultPath": null,
       "Next": "Done"
     },
-    "Done": { "Type": "Succeed" }
+    "Done": {
+      "Type": "Succeed"
+    }
   }
 }
