@@ -47,7 +47,7 @@ A CloudWatch dashboard puts these next to the alarms, so a judge, or a future bu
 
 ## Logs that help, and expire
 
-Powertools writes JSON logs with the building, tank and incident IDs on every line, so one incident can be traced from the reading that triggered it to the email that went out. Every log group keeps 7 days of logs. That's enough to debug a demo, and it won't quietly cost money for years.
+Powertools writes structured JSON logs. The key events (telemetry stored, incident actions, explanations attached) carry the building and incident IDs, and every authorization decision is logged with the Cedar policy behind it, so one incident can be traced from start to finish. Every log group keeps 7 days of logs. That's enough to debug a demo, and it won't quietly cost money for years.
 
 ## Keeping the bill at zero
 
