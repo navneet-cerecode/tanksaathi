@@ -36,7 +36,7 @@ In our demo, a stuck float valve loses about 220 litres an hour from 1 AM. After
 ## Why not let AI decide?
 
 - **It has to be explainable.** A caretaker should see why the alert fired: the numbers, the window, the threshold.
-- **It has to be testable.** We can write a test for "a 220 L/h loss at 1 AM fires after 45 minutes" and "a 40 L/h drip doesn't". We can't do that for a model's judgement.
+- **It has to be testable.** Our tests check that 45 minutes of heavy night-time loss fires, that a shorter loss doesn't, that the normal morning peak and a refill aren't flagged, and that sparse data never decides. You can't pin a model's judgement down like that.
 - **It has to be cheap and always on.** The rule runs in milliseconds in Lambda for every reading.
 
 We did plan to use Amazon Bedrock for one thing: rewriting the explanation in friendlier English and Hindi. Bedrock was blocked on our new account ("Operation not allowed"), so it stays behind a switch and the app uses standard text. The decision itself never depended on it.
