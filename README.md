@@ -6,6 +6,7 @@ Built by **Team NicobarAndaman** for Environmental Hacks (Bharat Builds Tour, Ev
 > TankSaathi tells a hostel caretaker how many hours of water the rooftop tank really has left on a hot day, and raises a leak alert while there is still time to act.
 
 - **Live app:** https://main.d1ko9f9uvcz4tc.amplifyapp.com (sign-in required; demo accounts are shared with judges on request)
+- **Demo video:** https://youtu.be/QbfelV5P3hA
 - **Region:** AWS ap-south-1 (Mumbai)
 - **What's real and what's simulated:** see [Honesty notes](#honesty-notes) and [VERIFICATION.md](VERIFICATION.md)
 

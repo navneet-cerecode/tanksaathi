@@ -54,3 +54,4 @@ Our readings come from a labelled simulator, not a real sensor. The heat factor 
 
 - Code: https://github.com/navneet-cerecode/tanksaathi
 - Live app: https://main.d1ko9f9uvcz4tc.amplifyapp.com
+- Demo video: https://youtu.be/QbfelV5P3hA

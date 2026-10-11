@@ -1,7 +1,7 @@
 # Submission writeup (draft)
 
 **Project:** TankSaathi · **Team:** NicobarAndaman · **Track:** Heat and Water
-**Repo:** https://github.com/navneet-cerecode/tanksaathi · **Live:** https://main.d1ko9f9uvcz4tc.amplifyapp.com · **Video:** _add YouTube link_
+**Repo:** https://github.com/navneet-cerecode/tanksaathi · **Live:** https://main.d1ko9f9uvcz4tc.amplifyapp.com · **Video:** https://youtu.be/QbfelV5P3hA
 
 ## The problem
 
